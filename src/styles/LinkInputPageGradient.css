@@ -1,0 +1,17 @@
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+  
+.bg-animated-gradient {
+  background: linear-gradient(-45deg, #051540, #111827, #042365);
+  background-size: 400% 400%;
+  animation: gradientMove 6s ease infinite;
+}
+
+.logo-animated-gradient {
+  background: linear-gradient(-45deg, #4f0771, #111827, #790796);
+  background-size: 400% 400%;
+  animation: gradientMove 6s ease infinite;
+}
