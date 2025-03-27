@@ -1,8 +1,32 @@
-# React + Vite
+# Beeps SteamHelper (Frontend)
+Фронтенд-частина веб-додатку для аналізу Steam-профілів із графіками та статистикою.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Опис
+Цей проєкт — клієнтська частина SteamHelper, яка дозволяє авторизуватися через Steam, переглядати профілі (власний або чужий) і аналізувати статистику ігор через інтерактивні графіки. Розроблений як портфоліо для демонстрації навичок у фронтенд-розробці.
 
-Currently, two official plugins are available:
+## Технології
+- **React**: Компонентна архітектура, роутинг (`react-router-dom`).
+- **TypeScript**: Типізація для коду.
+- **Zustand**: Легкий стейт-менеджер.
+- **Tailwind CSS**: Стилізація та адаптивність.
+- **Chart.js**: Інтерактивні графіки (Bar, Pie, Heatmap).
+- **Axios**: Запити до бекенду.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Основний функціонал
+- Аутентифікація через Steam.
+- Перегляд профілів із відображенням username замість Steam ID.
+- Графіки: топ-ігор (Bar), розподіл жанрів (Pie), активність (Heatmap), Online vs Offline.
+- Адаптивний дизайн для десктопів і мобільних.
+
+## Встановлення та запуск
+1. Клонувати репозиторій:
+   ```bash
+   git clone https://github.com/beepstephan/beepssteamhelper.git
+2. Встановити залежності:
+   ```bash
+   npm i
+3. Запустити:
+   ```bash
+   npm run start
+4. Переконайтеся, що бекенд запущений: beeps-steamhelper-backend.
+   
