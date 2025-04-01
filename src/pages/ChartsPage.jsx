@@ -60,23 +60,30 @@ export const ChartsPage = () => {
     "Other": "Інше",
   };
 
-  // фейк дані для онлайн та офлайн ігор
-  const multiplayerGenres = ["Massively Multiplayer", "Shooter", "MOBA", "Sports"];
-  const multiplayerTime = games
-    .filter((game) => multiplayerGenres.includes(game.genre))
-    .reduce((sum, game) => sum + game.playtime, 0);
-  const singleplayerTime = games
-    .filter((game) => !multiplayerGenres.includes(game.genre))
-    .reduce((sum, game) => sum + game.playtime, 0);
+  const multiplayerGames = games.filter((game) => game.isMultiplayer && !game.isMixed);
+  const singleplayerGames = games.filter((game) => !game.isMultiplayer && !game.isMixed);
+  const mixedGames = games.filter((game) => game.isMixed);
+
+  const multiplayerTime = multiplayerGames.reduce((sum, game) => sum + game.playtime, 0);
+  const singleplayerTime = singleplayerGames.reduce((sum, game) => sum + game.playtime, 0);
+  const mixedTime = mixedGames.reduce((sum, game) => sum + game.playtime, 0);
 
   const onlineVsOfflineData = {
-    labels: ["Мультиплеєр", "Одиночна"],
+    labels: ["Мультиплеєр", "Одиночна", "Змішана"],
     datasets: [
       {
         label: "Час гри (години)",
-        data: [multiplayerTime, singleplayerTime],
-        backgroundColor: ["rgba(154, 37, 250, 0.7)", "rgba(0, 255, 255, 0.7)"],
-        borderColor: ["rgba(154, 37, 250, 1)", "rgba(0, 255, 255, 1)"],
+        data: [multiplayerTime, singleplayerTime, mixedTime],
+        backgroundColor: [
+          "rgba(154, 37, 250, 0.7)",
+          "rgba(0, 255, 255, 0.7)",
+          "rgba(255, 165, 0, 0.7)"
+        ],
+        borderColor: [
+          "rgba(154, 37, 250, 1)",
+          "rgba(0, 255, 255, 1)",
+          "rgba(255, 165, 0, 1)"
+        ],
         borderWidth: 2,
       },
     ],
@@ -86,37 +93,49 @@ export const ChartsPage = () => {
     responsive: true,
     plugins: {
       legend: { position: "top", labels: { color: "#00FFFF", font: { family: "'Orbitron', sans-serif'" } } },
-      title: { display: true, text: "Мультиплеєр vs Одиночна", color: "#FF00FF", font: { size: 20, family: "'Orbitron', sans-serif'" } },
+      title: { display: true, text: "Мультиплеєр vs Одиночна vs Змішана", color: "#FF00FF", font: { size: 20, family: "'Orbitron', sans-serif'" } },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const index = context.dataIndex;
+            const label = context.label;
+            const value = context.raw;
+            let gameList = '';
+            if (index === 0) gameList = multiplayerGames.map(g => `${g.name}: ${g.playtime} год`).join(', ');
+            if (index === 1) gameList = singleplayerGames.map(g => `${g.name}: ${g.playtime} год`).join(', ');
+            if (index === 2) gameList = mixedGames.map(g => `${g.name}: ${g.playtime} год`).join(', ');
+            return `${label}: ${value} год (${gameList})`;
+          },
+        },
+      },
     },
   };
 
-  // Дані-заглушка для Heatmap
-  const heatmapRawData = [
-    { day: 0, hour: 0, value: 1 }, { day: 0, hour: 6, value: 2 }, { day: 0, hour: 12, value: 3 }, { day: 0, hour: 18, value: 4 }, { day: 0, hour: 23, value: 5 },
-    { day: 1, hour: 0, value: 0 }, { day: 1, hour: 6, value: 1 }, { day: 1, hour: 12, value: 2 }, { day: 1, hour: 18, value: 3 }, { day: 1, hour: 23, value: 4 },
-    { day: 2, hour: 0, value: 2 }, { day: 2, hour: 6, value: 3 }, { day: 2, hour: 12, value: 4 }, { day: 2, hour: 18, value: 5 }, { day: 2, hour: 23, value: 6 },
-    { day: 3, hour: 0, value: 1 }, { day: 3, hour: 6, value: 2 }, { day: 3, hour: 12, value: 3 }, { day: 3, hour: 18, value: 4 }, { day: 3, hour: 23, value: 5 },
-    { day: 4, hour: 0, value: 3 }, { day: 4, hour: 6, value: 4 }, { day: 4, hour: 12, value: 5 }, { day: 4, hour: 18, value: 6 }, { day: 4, hour: 23, value: 7 },
-    { day: 5, hour: 0, value: 5 }, { day: 5, hour: 6, value: 6 }, { day: 5, hour: 12, value: 7 }, { day: 5, hour: 18, value: 8 }, { day: 5, hour: 23, value: 9 },
-    { day: 6, hour: 0, value: 4 }, { day: 6, hour: 6, value: 5 }, { day: 6, hour: 12, value: 6 }, { day: 6, hour: 18, value: 7 }, { day: 6, hour: 23, value: 8 },
-  ];
+  const hourSlots = [0, 6, 12, 18, 23];
+  const heatmapRawData = games.flatMap((game, gameIndex) =>
+    hourSlots.map((hour) => ({
+      game: gameIndex,
+      hour,
+      value: Math.round((game.playtime_2weeks || 0) / 5),
+    }))
+  );
 
   const heatmapData = {
     datasets: [{
-      label: "Активність за годинами",
+      label: "Активність по іграх (останні 2 тижні)",
       data: heatmapRawData.map((item) => ({
         x: item.hour,
-        y: item.day,
+        y: item.game,
         v: item.value,
       })),
       backgroundColor: (context) => {
         const value = context.dataset.data[context.dataIndex].v;
-        return `rgba(0, 255, 255, ${value / 10})`;
+        return `rgba(0, 255, 255, ${Math.min(value / 20, 1)})`;
       },
       borderColor: "rgba(0, 255, 255, 1)",
       borderWidth: 1,
       width: ({ chart }) => (chart.chartArea || {}).width / 5 - 1,
-      height: ({ chart }) => (chart.chartArea || {}).height / 7 - 1,
+      height: ({ chart }) => (chart.chartArea || {}).height / games.length - 1,
     }],
   };
 
@@ -124,7 +143,15 @@ export const ChartsPage = () => {
     responsive: true,
     plugins: {
       legend: { display: false },
-      title: { display: true, text: "Активність за годинами", color: "#FF00FF", font: { size: 20, family: "'Orbitron', sans-serif'" } },
+      title: { display: true, text: "Активність по іграх (години за 2 тижні)", color: "#FF00FF", font: { size: 20, family: "'Orbitron', sans-serif'" } },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const game = games[context.raw.y];
+            return `${game.name}: ${context.raw.v} год о ${context.raw.x}:00`;
+          },
+        },
+      },
     },
     scales: {
       x: {
@@ -134,7 +161,11 @@ export const ChartsPage = () => {
       },
       y: {
         type: "linear",
-        ticks: { stepSize: 1, color: "#00FFFF", callback: (value) => ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"][value] },
+        ticks: {
+          stepSize: 1,
+          color: "#00FFFF",
+          callback: (value) => games[value]?.name || '',
+        },
         grid: { color: "rgba(0, 255, 255, 0.2)" },
       },
     },
